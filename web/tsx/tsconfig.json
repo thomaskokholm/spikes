@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "system",
+        "sourceMap": true,
+        "jsx": "react"
+    },
+    "exclude": [
+        "jspm_packages"
+    ]
+}
