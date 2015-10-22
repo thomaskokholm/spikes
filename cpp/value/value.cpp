@@ -1,62 +1,62 @@
-#include "variant.hpp"
+#include "value.hpp"
 
-namespace nbpp {
-    Variant::Variant( const Variant &var ) : _data( NULL ) {
-        if( var._data != NULL ) {
-            _data = var._data;
-            _data->_ref++;
+using namespace std;
+
+namespace Core {
+    void Value::null_error( const string &tname ) const {
+            stringstream os;
+            
+            os << tname << " is not a valid destination type, for ";
+            
+            if( _data )
+                os << _data->type_name();
+            else
+                os << "NULL";
+            
+            throw invalid_argument( os.str());
         }
+    
+    Value::Value( const Value &var )
+    {
+        _data = var._data;
     }
 
-    Variant::Variant( Variant && other ) : _data( NULL ) {
-        this->_data = other._data;
-        other._data = NULL;
+    Value::Value( Value && other )
+    {
+        _data = move(other._data);
     }
     
-    Variant::~Variant() {
-        if( _data )
-            if(--_data->_ref == 0)
-                delete _data;
+    Value::~Value() 
+    {
     }
 
-    Variant &Variant::operator=( const Variant &var ) {
-        if( var._data )
-            var._data->_ref++;
-            
-        if( _data )
-            if( --_data->_ref == 0 )
-                delete _data;
-
+    Value &Value::operator=( const Value &var ) 
+    {
         _data = var._data;
         return *this;
-    }
+    }   
 
-    Variant &Variant::operator=( Variant &&other ) {
-        if( this != &other ) {
-            if( _data )
-                if( --_data->_ref == 0 )
-                    delete _data;
-
-            _data = other._data;
-            other._data = NULL;
-        }
+    Value &Value::operator=( Value &&other ) 
+    {
+        _data = move(other._data);
         return *this;
     }
     
-    void Variant::out( ostream &os ) const {
+    void Value::out( ostream &os ) const {
         if( _data )
             _data->out( os );
         else
             os << "null";
     }
+    
+    template<> Value::Value<const char *>( const char *str ) : _data( new RealValue<string>( str )) {
+    }
 }
 
-std::ostream &operator << ( std::ostream &os, const nbpp::cvector &v )
+ostream &operator << ( ostream &os, const Core::cvector &v )
 {
-    nbpp::cvector::const_iterator i;
-
     os << "[";
-    for( i = v.begin(); i != v.end(); i++ ) {
+    for( auto i = v.begin(); i != v.end(); i++ ) {
         if( i != v.begin())
             os << ", ";
             
@@ -66,12 +66,10 @@ std::ostream &operator << ( std::ostream &os, const nbpp::cvector &v )
     return os;
 }
 
-std::ostream &operator << ( std::ostream &os, const nbpp::cmap &v )
+ostream &operator << ( ostream &os, const Core::cmap &v )
 {
-    nbpp::cmap::const_iterator i;
-
     os << "{";
-    for( i = v.begin(); i != v.end(); i++ ) {
+    for( auto i = v.begin(); i != v.end(); i++ ) {
         if( i != v.begin())
             os << ", ";
             
