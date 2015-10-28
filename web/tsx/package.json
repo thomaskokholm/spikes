@@ -1,0 +1,14 @@
+{
+  "jspm": {
+    "dependencies": {
+      "es6-promise": "npm:es6-promise@^3.0.2",
+      "react": "npm:react@^0.14.0",
+      "react-bootstrap": "npm:react-bootstrap@^0.27.3",
+      "react-dom": "npm:react-dom@^0.14.0",
+      "ts": "github:frankwallis/plugin-typescript@^2.1.0"
+    },
+    "devDependencies": {
+      "typescript": "npm:typescript@^1.6.2"
+    }
+  }
+}
