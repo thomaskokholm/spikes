@@ -12,20 +12,14 @@ interface CounterState {
 }
 
 export class Counter extends React.Component<CounterProps, CounterState> {
+    state = { count: 0 };
+
     constructor(props: CounterProps) {
         super( props );
-
-        this.state = { count: 0 };
-
-        console.log(this.state);
 
         setInterval(() => {
             this.setState({count: this.state.count + 1});
         }, 1000);
-    }
-
-    getInitialState() : CounterState {
-        return { count: 0 };
     }
 
     render() {
@@ -33,4 +27,4 @@ export class Counter extends React.Component<CounterProps, CounterState> {
     }
 }
 
-ReactDOM.render(<Counter name="Counter" />, document.body );
+ReactDOM.render(<Counter name="Counter" />, document.getElementById( "test_app"));

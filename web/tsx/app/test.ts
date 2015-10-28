@@ -1,3 +1,3 @@
-export function hest() {
-    console.log("hest");
+export function module_test() {
+    console.log("module load test");
 }
