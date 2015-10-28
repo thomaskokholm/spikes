@@ -1,11 +1,11 @@
 /**
-    JSON parser and serialized, made for using nb++ Variant as dynamic
+    JSON parser and serialized, made for using nb++ Value as dynamic
     type container.
     
     JSON: RFC-4627
 */
 
-#include "variant.hpp"
+#include "value.hpp"
 
 #include <assert.h>
 #include <ctype.h>
@@ -19,7 +19,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace nbpp;
+using namespace Core;
 
 // convert a unicode char to a utf8 char, as this is what we use internal
 static string utf8_decode( unsigned c )
@@ -165,9 +165,9 @@ string Tokenizer::str_pos() const
     return os.str();
 }
 
-static Variant json_parse_value( Tokenizer &tok );
+static Value json_parse_value( Tokenizer &tok );
 
-static Variant json_parse_list( Tokenizer &tok )
+static Value json_parse_list( Tokenizer &tok )
 {
     cvector res;
     
@@ -189,10 +189,10 @@ static Variant json_parse_list( Tokenizer &tok )
         }
     }
 
-    return Variant( res );
+    return Value( res );
 }
 
-static Variant json_parse_object( Tokenizer &tok )
+static Value json_parse_object( Tokenizer &tok )
 {
     cmap res;
     
@@ -227,12 +227,12 @@ static Variant json_parse_object( Tokenizer &tok )
         }
     }
 
-    return Variant( res );
+    return Value( res );
 }
 
-static Variant json_parse_value( Tokenizer &tok )
+static Value json_parse_value( Tokenizer &tok )
 {
-    Variant ret;
+    Value ret;
     
     switch( tok.type() ) {
     case Tokenizer::typeDelim:
@@ -248,9 +248,9 @@ static Variant json_parse_value( Tokenizer &tok )
         if( "null" == tok.val() || "undefined" == tok.val())
 			;
         else if( tok.val() == "false" )
-            ret = Variant( false );
+            ret = Value( false );
         else if( tok.val() == "true" )
-            ret = Variant( true );
+            ret = Value( true );
         else
             throw invalid_argument( "unknown symbol at " + tok.str_pos() );
         break;
@@ -260,11 +260,11 @@ static Variant json_parse_value( Tokenizer &tok )
         const char *p = tok.val().c_str();
         double v = strtod( p, &end );
 
-        ret = Variant( v );
+        ret = Value( v );
         break;
     }
     case Tokenizer::typeString:
-        ret = Variant( tok.val());
+        ret = Value( tok.val());
         break;
             
     case Tokenizer::typeEof:
@@ -328,7 +328,7 @@ static void serialize_json_string(ostream &os, const string &str )
 			os << c;
     }
 }
-static void serialize_value( ostream &os, const Variant &var, int level = 0 );
+static void serialize_value( ostream &os, const Value &var, int level = 0 );
 
 static void serialize_array( ostream &os, const cvector &v, int level = 0 ) 
 {
@@ -361,7 +361,7 @@ static void serialize_object( ostream &os, const cmap &v, int level = 0)
 	indent( os, level ) << "}";
 }
 
-static void serialize_value( ostream &os, const Variant &var, int level )
+static void serialize_value( ostream &os, const Value &var, int level )
 {
 	if( var.is_null())
 		os << "null";
@@ -389,14 +389,14 @@ static void serialize_value( ostream &os, const Variant &var, int level )
 	}
 }
 
-namespace nbpp {
-	ostream &json_serialize( ostream &os, const Variant &var ) 
+namespace Core {
+	ostream &json_serialize( ostream &os, const Value &var ) 
 	{
 		serialize_value( os, var );
 		return os;
 	}
 
-	Variant json_parse( istream &is )
+	Value json_parse( istream &is )
 	{
 		Tokenizer tok( is );
 

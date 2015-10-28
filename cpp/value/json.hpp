@@ -1,13 +1,15 @@
 #ifndef __JSON_HPP__
 #define __JSON_HPP__ 1
 
-#include "variant.hpp"
+#include "value.hpp"
 #include <istream>
 #include <ostream>
 
-namespace nbpp {
-	Variant json_parse( istream &is );
-	ostream &json_serialize( ostream &os, const Variant &val );
+namespace Core {
+    using namespace std;
+    
+	Value json_parse( istream &is );
+	ostream &json_serialize( ostream &os, const Value &val );
 }
 
 #endif
