@@ -1,16 +1,36 @@
 /// <reference path="../typings/tsd.d.ts" />
 
 import * as React from 'react';
-//import * as ReactDOM from 'react-dom';
+import * as ReactDOM from 'react-dom';
 
-interface HelloWorldProps extends React.Props<any> {
+interface CounterProps extends React.Props<any> {
     name: string;
 }
 
-export class HelloMessage extends React.Component<HelloWorldProps, {}> {
+interface CounterState {
+    count: number;
+}
+
+export class Counter extends React.Component<CounterProps, CounterState> {
+    constructor(props: CounterProps) {
+        super( props );
+
+        this.state = { count: 0 };
+
+        console.log(this.state);
+
+        setInterval(() => {
+            this.setState({count: this.state.count + 1});
+        }, 1000);
+    }
+
+    getInitialState() : CounterState {
+        return { count: 0 };
+    }
+
     render() {
-        return <div>Hello {this.props.name}</div>;
+        return <div>{this.props.name} : {this.state.count}</div>;
     }
 }
 
-React.render(<HelloMessage name="Bo Lorentsen" />, document.body );
+ReactDOM.render(<Counter name="Counter" />, document.body );

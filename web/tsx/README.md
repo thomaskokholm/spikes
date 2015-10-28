@@ -1,17 +1,13 @@
 # Template for modern WEB dev
 
-The goal for this spike is making a combination of E6 modules, react, bootstrap and typescript.
+The goal for this spike is making a combination of E6 modules (SystemJS), React and Typescript.
 
 Making new projects without ES6 modules just makes sense now a days, and using jspm as
 manager sounds promising, so this need to be tried out.
 
-React sounds interesting, and using it together with typescript is just too tempting.
+React sounds interesting, and using it together with typescript and tsx is just too tempting.
 
-jspm offers both packing and trans coding, and both would be extremely helpful for future projects.
-
-Many nice frameworks have been made available lately, but bootstrap remain the most
-used, and as this template is not about css and UI design, this seemed like a sensible
-default.
+jspm offers both packing and live trans coding, and works nicely and would make future web development much more smooth, as code now loads in the browser as if it was plain JS files.
 
 ## setup
 
@@ -21,7 +17,7 @@ To setup this framework the system need the following tools
 
    Handle typescript typings download and version syncing
 
- * typescript
+ * Typescript
 
    This is a typescript project, so typescript my be needed. Note the if you only use browser transpile this is not needed, but you editor or bundling may need this.
 
