@@ -107,15 +107,15 @@ public:
     }
 };
 
+#ifdef TEST
 
 int main( int argc, const char *argv[] )
 {
-    CommandQueue<int> queue(
-                             []( int cnt ) -> void {
-            cout << "result: " << cnt << endl;
+    CommandQueue<int> queue( []( int cnt ) -> void {
+        cout << "result: " << cnt << endl;
 
-            this_thread::sleep_for(chrono::milliseconds( 100 ));
-        });
+        this_thread::sleep_for(chrono::milliseconds( 100 ));
+    });
 
     for( int n = 0; n != 100; n++ ) {
         //this_thread::sleep_for(chrono::milliseconds( 100 ));
@@ -124,3 +124,5 @@ int main( int argc, const char *argv[] )
 
     queue.wait();
 }
+
+#endif

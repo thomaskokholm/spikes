@@ -10,7 +10,7 @@ class Request {
 public:
     Request( struct wsgi_request *wsgi_req ) : _wsgi_req( wsgi_req ) {}
 
-    void add( const string &n, const string &v ) {
+    void add( const string &name, const string &val ) {
         uwsgi_response_add_header(_wsgi_req, (char *)name.data(), name.length(),
             (char *)val.data(), val.length());
     }
@@ -37,10 +37,8 @@ public:
 };
 
 class FakeClass {
-
-    public:
-        void hello_world(Request &req);
-
+public:
+    void hello_world(Request &req);
 };
 
 void FakeClass::hello_world(Request &req) {

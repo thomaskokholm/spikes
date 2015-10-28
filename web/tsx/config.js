@@ -32,6 +32,8 @@ System.config({
     "babel-runtime": "npm:babel-runtime@5.8.25",
     "core-js": "npm:core-js@1.2.1",
     "es6-promise": "npm:es6-promise@3.0.2",
+    "frankwallis/plugin-typescript": "github:frankwallis/plugin-typescript@2.1.4",
+    "plugin-typescript": "npm:plugin-typescript@2.0.3",
     "react": "npm:react@0.14.0",
     "react-bootstrap": "npm:react-bootstrap@0.27.3",
     "react-dom": "npm:react-dom@0.14.0",
@@ -153,6 +155,9 @@ System.config({
     },
     "npm:path-browserify@0.0.0": {
       "process": "github:jspm/nodelibs-process@0.1.2"
+    },
+    "npm:plugin-typescript@2.0.3": {
+      "typescript": "npm:typescript@1.6.2"
     },
     "npm:process@0.11.2": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
