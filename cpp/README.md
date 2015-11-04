@@ -5,7 +5,7 @@ libs if it is needed to perform a task.
 
 If there is a way to do things in std C++ 11 or 14, that is the preferred way.
 
-1. command queue
+## command queue
 
     This can be used as a input queue for a pool of C++11 threads that need a common command
     dispatched out to more than one thread.
@@ -15,7 +15,7 @@ If there is a way to do things in std C++ 11 or 14, that is the preferred way.
     I much modern code the use of channels are more common, but this pattern is plain vanilla
     command execute.
 
-2. value
+## value
 
     C++ is static types, but the world is not. Over the time many libraries have been made to
     try to make a dynamic value for C++, but this is an attempt to use as many C++ elements as
@@ -27,7 +27,7 @@ If there is a way to do things in std C++ 11 or 14, that is the preferred way.
     There are some natural expansions to a value system, like the enclosed json parser and
     serializer but these will have there own spikes.
 
-3. JsonRPC
+## JsonRPC
 
     Handling JsonRPC 2.0 services can be done as soon as there is a way to transfer JSON to
     an internal format like the Value. But this server support layer tries to use C++ even more
@@ -40,13 +40,13 @@ If there is a way to do things in std C++ 11 or 14, that is the preferred way.
     tell with functions has been added and what kind arguments it requires. This way we can have
     runtime checked mapping of static arguments.
 
-4. [uWSGI](http://uwsgi-docs.readthedocs.org/en/latest/index.html)
+## [uWSGI](http://uwsgi-docs.readthedocs.org/en/latest/index.html)
 
     Wrapper for C++ to make it more easy to make uwsgi plugins in pure C++. uwsgi are used many
     places and it takes care of many trivial network elements and works perfectly with nginx and
     other web services.
 
-5. DB
+## DB
 
     Many wrappers for DB and SQL have been made, but they either limited in there functionality like
     [libdbi](http://libdbi.sourceforge.net/docs/programmers-guide/index.html) or they are tight to
