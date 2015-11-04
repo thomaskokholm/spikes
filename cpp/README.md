@@ -27,21 +27,30 @@ If there is a way to do things in std C++ 11 or 14, that is the preferred way.
     There are some natural expansions to a value system, like the enclosed json parser and
     serializer but these will have there own spikes.
 
-3. jsonrpc
+3. JsonRPC
 
-    Handling JsonRPC 2.0 services can be done as soon as there is a way to transfer Json to
+    Handling JsonRPC 2.0 services can be done as soon as there is a way to transfer JSON to
     an internal format like the Value. But this server support layer tries to use C++ even more
     by using the type info found on the C++ function as the driver for :
 
-    * SMD service list
+    * SMD service list [like this](http://json-schema.org/latest/json-schema-hypermedia.html)
     * PRC envelope argument mapping
 
     This way we can with ease add a function to our RPC handler, and this handler will be able to
     tell with functions has been added and what kind arguments it requires. This way we can have
     runtime checked mapping of static arguments.
 
-4. uwsgi
+4. [uWSGI](http://uwsgi-docs.readthedocs.org/en/latest/index.html)
 
     Wrapper for C++ to make it more easy to make uwsgi plugins in pure C++. uwsgi are used many
     places and it takes care of many trivial network elements and works perfectly with nginx and
     other web services.
+
+5. DB
+
+    Many wrappers for DB and SQL have been made, but they either limited in there functionality like
+    [libdbi](http://libdbi.sourceforge.net/docs/programmers-guide/index.html) or they are tight to
+    larger frameworks like boost, Qt or Gtk+.
+
+    My goal is again to make it a C++11 compliment as possible, and only depending on the value system
+    defined here.

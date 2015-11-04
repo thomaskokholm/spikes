@@ -5,9 +5,9 @@
 #include <istream>
 #include <ostream>
 
-namespace Core {
+namespace core {
     using namespace std;
-    
+
 	Value json_parse( istream &is );
 	ostream &json_serialize( ostream &os, const Value &val );
 }

@@ -1,7 +1,7 @@
 /**
     JSON parser and serialized, made for using nb++ Value as dynamic
     type container.
-    
+
     JSON: RFC-4627
 */
 
@@ -19,7 +19,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace Core;
+using namespace core;
 
 // convert a unicode char to a utf8 char, as this is what we use internal
 static string utf8_decode( unsigned c )
@@ -40,8 +40,8 @@ static string utf8_decode( unsigned c )
         res.push_back((char)(0x80 | ((c >> 6) & 0x3F)));
         res.push_back((char)(0x80 | (c & 0x3F)));
      }
-     
-     return res; 
+
+     return res;
 }
 
 class Tokenizer {
@@ -54,13 +54,13 @@ public:
         typeString,
         typeNumber
     };
-    
+
     Tokenizer(istream &is) : _is( is ) {
         next();
     }
 
     ttype type() const {return _type;}
-    
+
     ttype next();
 
     string val() const {return _val;}
@@ -76,9 +76,9 @@ private:
 Tokenizer::ttype Tokenizer::next()
 {
     _val.clear();
-        
+
     int ch;
-    
+
     while(((ch = _is.get()) != -1) && isspace( ch )) {
         if( ch == '\n' )
             _line++;
@@ -86,13 +86,13 @@ Tokenizer::ttype Tokenizer::next()
 
     if( ! _is )
         return _type = typeEof;
-    
+
     if( strchr( "[]{},:", ch )) {
         _type = typeDelim;
         _val.push_back( (char)ch );
     } else if( ch == '"' ) {
         _type = typeString;
-        
+
         while ((ch = _is.get()) != '"' && _is ) {
             if ( ch == '\\') {
                 ch = _is.get();
@@ -112,7 +112,7 @@ Tokenizer::ttype Tokenizer::next()
 
                     while ( isxdigit(ch = _is.get()) && num.length() < 4 && _is )
                         num += (char)ch;
-                    
+
                     if (num.length() < 4)
                         throw invalid_argument( "hex unicode must contain 4 digits. not just " + num );
                     else
@@ -121,14 +121,14 @@ Tokenizer::ttype Tokenizer::next()
                     break;
 
                 default:
-                    throw invalid_argument("unknown escape character after backslash: " + ch);
+                    throw invalid_argument("unknown escape character after backslash: " + to_string( ch ));
                 }
             } else
                 _val += (char)ch;
         }
     } else if( isdigit( ch ) || strchr( ".-", ch )) {
         _val.push_back( ch );
-        
+
         while((ch = _is.get()) != -1 && _is ) {
             if( isdigit( ch ) || ch == '.' )
                 _val.push_back( ch );
@@ -140,7 +140,7 @@ Tokenizer::ttype Tokenizer::next()
         _type = typeNumber;
     } else if( isalpha( ch )) { // null, undefined, true, false
         _val.push_back( ch );
-        
+
         while((ch = _is.get()) != -1 && _is) {
             if( isalpha( ch ))
                 _val.push_back( ch );
@@ -152,7 +152,7 @@ Tokenizer::ttype Tokenizer::next()
         _type = typeSymbol;
     } else
         _type = typeError;
-    
+
     return _type;
 }
 
@@ -170,7 +170,7 @@ static Value json_parse_value( Tokenizer &tok );
 static Value json_parse_list( Tokenizer &tok )
 {
     cvector res;
-    
+
     if( tok.type() == Tokenizer::typeDelim && tok.val() == "[" ) {
         while( Tokenizer::typeEof != tok.next()) {
             if( tok.type() == Tokenizer::typeDelim && tok.val() == "]" )
@@ -195,21 +195,21 @@ static Value json_parse_list( Tokenizer &tok )
 static Value json_parse_object( Tokenizer &tok )
 {
     cmap res;
-    
-    if( tok.type() == Tokenizer::typeDelim && tok.val() == "{" ) {       
+
+    if( tok.type() == Tokenizer::typeDelim && tok.val() == "{" ) {
         while( Tokenizer::typeEof != tok.next() ) {
             if( tok.type() == Tokenizer::typeDelim && tok.val() == "}" )
                 break;
 
             if( tok.type() == Tokenizer::typeString ) {
                 string key = tok.val();
-                
+
                 if( Tokenizer::typeDelim == tok.next() ) {
                     if( tok.val() == ":" ) {
                         tok.next();
-                        
+
                         res[ key ] = json_parse_value( tok );
-                        
+
                         if( Tokenizer::typeDelim != tok.next() && tok.val() != "," )
                             break;
 
@@ -219,7 +219,7 @@ static Value json_parse_object( Tokenizer &tok )
                         throw invalid_argument( "syntax error in key value separator in object at " + tok.str_pos());
                 } else
                     throw invalid_argument( "syntax error in object at " + tok.str_pos());
-                
+
                 if( tok.type() == Tokenizer::typeEof )
                     throw invalid_argument( "premature object termination" );
             } else
@@ -233,7 +233,7 @@ static Value json_parse_object( Tokenizer &tok )
 static Value json_parse_value( Tokenizer &tok )
 {
     Value ret;
-    
+
     switch( tok.type() ) {
     case Tokenizer::typeDelim:
         if( tok.val() == "[" )
@@ -243,7 +243,7 @@ static Value json_parse_value( Tokenizer &tok )
         else
             throw invalid_argument( "syntax error, unknown value construct at " + tok.str_pos() );
         break;
-            
+
     case Tokenizer::typeSymbol:
         if( "null" == tok.val() || "undefined" == tok.val())
 			;
@@ -266,7 +266,7 @@ static Value json_parse_value( Tokenizer &tok )
     case Tokenizer::typeString:
         ret = Value( tok.val());
         break;
-            
+
     case Tokenizer::typeEof:
     default:
         break;
@@ -279,19 +279,19 @@ static Value json_parse_value( Tokenizer &tok )
 
 static ostream &indent( ostream &os, int level )
 {
-	while( level-- ) 
+	while( level-- )
 		os << " ";
-		
+
 	return os;
 }
 
 /* Forward declaration for recursion */
 
-static void json_escape_char(ostream &os, unsigned char const c) 
+static void json_escape_char(ostream &os, unsigned char const c)
 {
     char slashChar;
         /* Character that goes after the backslash, including 'u' for \uHHHH */
-    
+
     switch (c) {
 		case '"' : slashChar = '"';  break; /* U+0022 */
 		case '\\': slashChar = '\\'; break; /* U+005C */
@@ -305,20 +305,20 @@ static void json_escape_char(ostream &os, unsigned char const c)
     };
 
     os << '\\' << slashChar;
-    
+
     if (slashChar == 'u') {
 		char hex[ 5 ];
-		
+
         snprintf( hex, 4, "%04x", c);
         os << hex;
     }
 }
 
 // take care of string escaping
-static void serialize_json_string(ostream &os, const string &str ) 
+static void serialize_json_string(ostream &os, const string &str )
 {
     string::const_iterator cur = str.begin();
-    
+
     while (cur != str.end() ) {
         unsigned char const c = *cur++;
 
@@ -330,28 +330,28 @@ static void serialize_json_string(ostream &os, const string &str )
 }
 static void serialize_value( ostream &os, const Value &var, int level = 0 );
 
-static void serialize_array( ostream &os, const cvector &v, int level = 0 ) 
+static void serialize_array( ostream &os, const cvector &v, int level = 0 )
 {
 	os << "[";
-	
+
     for( auto i = v.begin(); i != v.end(); i++ ) {
 		if( i != v.begin())
 			os << ",";
-			
+
         serialize_value( os, *i, level + 1 );
 	}
-	
-    os << "]";
-} 
 
-static void serialize_object( ostream &os, const cmap &v, int level = 0) 
+    os << "]";
+}
+
+static void serialize_object( ostream &os, const cmap &v, int level = 0)
 {
 	os << "{" << endl;
-        
+
     for( auto i = v.begin(); i != v.end(); i++ ) {
-		if( i != v.begin()) 
+		if( i != v.begin())
 			os << "," << endl;
-			
+
 		indent( os, level + 1 ) << "\"";
 		serialize_json_string( os, i->first );
 		os << "\":";
@@ -381,7 +381,7 @@ static void serialize_value( ostream &os, const Value &var, int level )
 		serialize_array( os, var.get<cvector>(), level);
 	else {
 		stringstream ss;
-		
+
 		ss << var;
 		os << "\"";
 		serialize_json_string( os, ss.str());
@@ -389,8 +389,8 @@ static void serialize_value( ostream &os, const Value &var, int level )
 	}
 }
 
-namespace Core {
-	ostream &json_serialize( ostream &os, const Value &var ) 
+namespace core {
+	ostream &json_serialize( ostream &os, const Value &var )
 	{
 		serialize_value( os, var );
 		return os;

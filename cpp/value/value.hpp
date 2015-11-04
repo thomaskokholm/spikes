@@ -14,7 +14,7 @@
 
     It is possible to use ostream directly on the Value as this is
     deligated directly to the contained type.
-    
+
     Special version using shared_ptr instead of ref counter
 */
 #ifndef __VALUE_HPP__
@@ -30,7 +30,7 @@
 #include <vector>
 #include <map>
 
-namespace Core {
+namespace core {
     using namespace std;
 
     class Value;
@@ -42,10 +42,12 @@ namespace Core {
         void null_error( const string &tname ) const;
     public:
         Value() : _data( NULL ) {}
-        
+
         Value( const Value &var );
         Value( Value && other );
-        
+
+        Value( const char *str ); // Special version for old style strings
+
         template <typename T> Value( T v ) : _data( new RealValue<T>( v )) {
             _data = make_shared<RealValue<T>>( v );
         }
@@ -57,24 +59,24 @@ namespace Core {
 
         template <typename T> T & get() {
             shared_ptr<RealValue<T>> tmp = dynamic_pointer_cast<RealValue<T>>( _data );
-            
-            if( tmp == nullptr ) 
+
+            if( tmp == nullptr )
                 null_error( typeid(T).name());
-            
+
             return tmp->_val;
         }
 
         template <typename T> const T & get() const {
             shared_ptr<const RealValue<T>> tmp = dynamic_pointer_cast<const RealValue<T>>( _data );
-            
+
             if( tmp == nullptr )
                 null_error( typeid(T).name());
-            
+
             return tmp->_val;
         }
 
         template <typename T> operator T () const {return get<T>();}
-        
+
         template <typename T> operator T & () {return get<T>();}
 
         const Value &operator [] ( const string &key ) const {
@@ -82,7 +84,7 @@ namespace Core {
             auto i = map.find( key );
             if( i != map.end())
                 return i->second;
-                
+
             throw invalid_argument( key + " is an unknown key" );
         }
 
@@ -105,7 +107,7 @@ namespace Core {
             virtual ~Base() {}
 
             virtual string type_name() const = 0;
-            
+
             virtual void out( ostream &os ) const = 0;
         };
 
@@ -130,13 +132,10 @@ namespace Core {
 
         shared_ptr<Base> _data;
     };
-
-    // specialized for const char * -> string 
-    template<> Value::Value<const char *>( const char *str );
 }
 
-// Make stream simple to use 
-inline std::ostream &operator << ( std::ostream &os, const Core::Value &v ) {v.out( os ); return os;}
-std::ostream &operator << ( std::ostream &os, const Core::cvector &v );
-std::ostream &operator << ( std::ostream &os, const Core::cmap &v );
+// Make stream simple to use
+inline std::ostream &operator << ( std::ostream &os, const core::Value &v ) {v.out( os ); return os;}
+std::ostream &operator << ( std::ostream &os, const core::cvector &v );
+std::ostream &operator << ( std::ostream &os, const core::cmap &v );
 #endif

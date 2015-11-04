@@ -100,8 +100,13 @@ template<typename Ret, typename... Args>
         return RpcFunction<Ret,Args...>( fn );
     }
 
+struct XXX {
+    string name;
+    int age;
+};
+
 int main( ) {
-    auto f = make_RpcFunction( function<void(int, const string, double, int, bool)>( []( int n, const string s, double x, int y, bool b ) -> void {
+    auto f = make_RpcFunction( FFL( []( int n, const string s, double x, XXX info, bool b ) -> void {
         cout << n << endl;
     }));
 
