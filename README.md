@@ -8,5 +8,5 @@ a concept or as things meant as the basis for some larger ideas.
 It was spread all over, on different servers and that is not very useful, so this
 repos contain the fruit of this consolidation work.
 
-* [C++ spikes](/blob/master/cpp/README.md)
-* [WEB spikes](/blob/master/web/README.md)
+* [C++ spikes](cpp/README.md)
+* [WEB spikes](web/README.md)
