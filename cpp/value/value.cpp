@@ -12,7 +12,7 @@ namespace core {
             os << tname << " is not a valid destination type, for ";
 
             if( _data )
-                os << _data->type_name();
+                os << _data->type_info_get().name();
             else
                 os << "NULL";
 
@@ -51,8 +51,6 @@ namespace core {
         else
             os << "null";
     }
-
-
 }
 
 ostream &operator << ( ostream &os, const core::cvector &v )

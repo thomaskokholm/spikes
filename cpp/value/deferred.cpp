@@ -35,7 +35,7 @@ namespace nbpp {
 
         Ret call( Args... args ) {
             Ret res;
-            
+
             for( auto fn : _callee )
                 res = fn( args... );
 

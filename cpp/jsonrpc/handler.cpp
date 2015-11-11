@@ -19,8 +19,21 @@
 #include <map>
 #include <typeinfo>
 #include <typeindex>
+#include "../value/value.hpp"
 
 using namespace std;
+using namespace core;
+
+namespace helper {
+    template <int... Is>
+    struct index {};
+
+    template <int N, int... Is>
+    struct gen_seq : gen_seq<N - 1, N - 1, Is...> {};
+
+    template <int... Is>
+    struct gen_seq<0, Is...> : index<Is...> {};
+}
 
 // http://stackoverflow.com/questions/13358672/how-to-convert-a-lambda-to-an-stdfunction-using-templates
 // FFL convert lambda to a std::function
@@ -45,13 +58,13 @@ FFL(F const &func)
 
 // http://stackoverflow.com/questions/26902633/how-to-iterate-over-a-tuple-in-c-11
 template<class F, class...Ts, std::size_t...Is>
-void for_each_in_tuple(const std::tuple<Ts...> & tuple, F func, std::index_sequence<Is...>){
+void for_each_in_tuple(std::tuple<Ts...> & tuple, F func, std::index_sequence<Is...>){
     using expander = int[];
     (void)expander { 0, ((void)func(std::get<Is>(tuple)), 0)... };
 }
 
 template<class F, class...Ts>
-void for_each_in_tuple(const std::tuple<Ts...> & tuple, F func){
+void for_each_in_tuple(std::tuple<Ts...> & tuple, F func){
     for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
 }
 
@@ -69,6 +82,18 @@ class RpcFunction {
     typedef function<Ret (Args...)> Func;
     Func _fn;
 
+    template <typename... Fargs, int... Is>
+    void func(std::tuple<Fargs...>& tup, helper::index<Is...>) const
+    {
+        _fn(std::get<Is>(tup)...);
+    }
+
+    template <typename... Fargs>
+    void func(std::tuple<Fargs...>& tup) const
+    {
+        func(tup, helper::gen_seq<sizeof...(Fargs)>{});
+    }
+
     template<typename T> void dump(T t) {
         cout << __PRETTY_FUNCTION__ << endl;
         cout << typeid( t ).name() << endl;
@@ -79,6 +104,35 @@ class RpcFunction {
         cout << typeid( t ).name() << endl;
         dump( args... );
     }
+
+    // from section 28.6.4 page 817
+    // Convert parameters to the proper native type
+    template <size_t N>
+    struct params_to_tuple {
+        template<typename ...T>
+        static typename enable_if<(N<sizeof...(T))>::type
+        append( tuple<T...>& t, const cvector &params ) {
+            if( params.size() <= N ) {
+                clog << "more arguments are required " << tuple_size<typename decay<decltype(t)>::type>::value
+                    << " than given " << params.size() << endl;
+                return;
+            }
+
+            if( params[ N ].is_type(get<N>(t)))
+                get<N>(t) = params[ N ].get<typename decay<decltype(get<N>(t))>::type>();
+            else
+                clog << "type error in param " << N << " require " << typeid(get<N>(t)).name() <<
+                    " but got " << params[ N ].type_info_get().name() << endl;
+
+            params_to_tuple<N+1>::append(t,params);
+        }
+
+        template<typename ...T>
+        static typename enable_if<!(N<sizeof...(T))>::type
+        append( tuple<T...>& t, const cvector &params ) {
+        }
+    };
+
 public:
     RpcFunction( const Func fn ) : _fn( fn ) {
     }
@@ -92,9 +146,20 @@ public:
 
         cout << "Return type " << typeid( Ret ).name() << " JSON " << json_types[ typeid( Ret )] << endl;
     }
+
+    Value call( const cvector &params ) const {
+        tuple<Args...> args;
+        // size_t n=0;
+
+        params_to_tuple<0>::append( args, params );
+
+        func( args );
+
+        return Value();
+    }
 };
 
-// C++ can't inferre in template classes !!!
+// C++ can't infer in template classes !!!
 template<typename Ret, typename... Args>
     RpcFunction<Ret, Args...> make_RpcFunction( const function<Ret (Args...)> fn ) {
         return RpcFunction<Ret,Args...>( fn );
@@ -106,11 +171,14 @@ struct XXX {
 };
 
 int main( ) {
-    auto f = make_RpcFunction( FFL( []( int n, const string s, double x, XXX info, bool b ) -> void {
+    auto f = make_RpcFunction( FFL( []( int n, string s, double x, XXX info, bool b ) -> void {
         cout << n << endl;
     }));
 
-    f.footprint();
+//    f.footprint();
+    f.call({Value(42), Value{"hest"}, 3.14 });
+
+    f.call({true, 23, 3.14 });
 
     auto f2 = make_RpcFunction( function<void(map<string, string>, string, bool)>( []( map<string, string>, const string s, bool b ) -> void {
         cout << s << endl;

@@ -26,6 +26,7 @@
 #include <typeinfo>
 #include <stdexcept>
 #include <memory>
+#include <iostream>
 
 #include <vector>
 #include <map>
@@ -58,21 +59,27 @@ namespace core {
         Value &operator=( Value &&other );
 
         template <typename T> T & get() {
-            shared_ptr<RealValue<T>> tmp = dynamic_pointer_cast<RealValue<T>>( _data );
+            if( _data ) {
+                auto tmp = dynamic_pointer_cast<RealValue<T>>( _data );
 
-            if( tmp == nullptr )
-                null_error( typeid(T).name());
+                if( tmp == nullptr )
+                    null_error( typeid(T).name());
 
-            return tmp->_val;
+                return tmp->_val;
+            }
+            throw invalid_argument( "can't get data from NULL value" );
         }
 
         template <typename T> const T & get() const {
-            shared_ptr<const RealValue<T>> tmp = dynamic_pointer_cast<const RealValue<T>>( _data );
+            if( _data ) {
+                auto tmp = dynamic_pointer_cast<const RealValue<T>>( _data );
 
-            if( tmp == nullptr )
-                null_error( typeid(T).name());
+                if( tmp == nullptr )
+                    null_error( typeid(T).name());
 
-            return tmp->_val;
+                return tmp->_val;
+            }
+            throw invalid_argument( "can't get data from NULL value" );
         }
 
         template <typename T> operator T () const {return get<T>();}
@@ -88,14 +95,27 @@ namespace core {
             throw invalid_argument( key + " is an unknown key" );
         }
 
-        bool is_null() const {return !_data;}
+        bool is_null() const {return _data == nullptr;}
 
         template <typename T> bool is_type( T v ) const {
-            return typeid(*_data) == typeid( v );
+            if( _data )
+                return _data->type_info_get() == typeid( v );
+
+            return false;
         }
 
         template <typename T> bool is_type() const {
-            return typeid(*_data) == typeid(RealValue<T>);
+            if( _data )
+                return _data->type_info_get() == typeid( T );
+
+            return false;
+        }
+
+        const type_info &type_info_get() const {
+            if( _data )
+                return _data->type_info_get();
+
+            return typeid( void );
         }
 
         string str() const {return get<string>();}
@@ -106,7 +126,7 @@ namespace core {
         public:
             virtual ~Base() {}
 
-            virtual string type_name() const = 0;
+            virtual const type_info &type_info_get() const = 0;
 
             virtual void out( ostream &os ) const = 0;
         };
@@ -116,8 +136,8 @@ namespace core {
             RealValue( T v ) : _val( v ) {}
             ~RealValue() {}
 
-            string type_name() const {
-                return typeid(_val).name();
+            const type_info &type_info_get() const {
+                return typeid(_val);
             }
 
             void out( ostream &os ) const { os << _val;}
