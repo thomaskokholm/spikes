@@ -82,25 +82,34 @@ class RpcFunction {
     typedef function<Ret (Args...)> Func;
     Func _fn;
 
-    template <typename... Fargs, int... Is>
-    void func(std::tuple<Fargs...>& tup, helper::index<Is...>) const
-    {
-        _fn(std::get<Is>(tup)...);
+    template <int... Is>
+    Ret func(std::tuple<Args...>& tup, helper::index<Is...>) const {
+        return _fn(std::get<Is>(tup)...);
     }
 
-    template <typename... Fargs>
-    void func(std::tuple<Fargs...>& tup) const
-    {
-        func(tup, helper::gen_seq<sizeof...(Fargs)>{});
+    Ret func(std::tuple<Args...>& tup) const {
+        return func(tup, helper::gen_seq<sizeof...(Args)>{});
+    }
+
+    // make sure to be able to handle void return transparently
+    template<typename R = Ret>
+    typename enable_if<!is_void<R>::value, Value>::type
+    call_fn( std::tuple<Args...>& args ) const {
+        return Value( func( args ) );
+    }
+
+    template<typename R = Ret>
+    typename enable_if<is_void<R>::value, Value>::type
+    call_fn( std::tuple<Args...>& args ) const {
+        func( args );
+        return Value();
     }
 
     template<typename T> void dump(T t) {
-        cout << __PRETTY_FUNCTION__ << endl;
         cout << typeid( t ).name() << endl;
     }
 
     template<typename T, typename... LArgs> void dump( T t, LArgs... args ) {
-        cout << __PRETTY_FUNCTION__ << endl;
         cout << typeid( t ).name() << endl;
         dump( args... );
     }
@@ -147,15 +156,13 @@ public:
         cout << "Return type " << typeid( Ret ).name() << " JSON " << json_types[ typeid( Ret )] << endl;
     }
 
+
     Value call( const cvector &params ) const {
         tuple<Args...> args;
-        // size_t n=0;
 
-        params_to_tuple<0>::append( args, params );
+        params_to_tuple<0>::append( args, params ); // Map value types to C++ types
 
-        func( args );
-
-        return Value();
+        return call_fn<Ret>( args );
     }
 };
 
@@ -171,8 +178,16 @@ struct XXX {
 };
 
 int main( ) {
-    auto f = make_RpcFunction( FFL( []( int n, string s, double x, XXX info, bool b ) -> void {
+    auto empty = make_RpcFunction( FFL( []() -> void {
+        cout << "empty" << endl;
+    }));
+
+    empty.call({});
+
+    auto f = make_RpcFunction( FFL( []( int n, string s, double x, XXX info, bool b ) -> bool {
         cout << n << endl;
+
+        return true;
     }));
 
 //    f.footprint();
@@ -185,4 +200,6 @@ int main( ) {
     }));
 
     f2.footprint();
+
+    f2.call({32});
 }
