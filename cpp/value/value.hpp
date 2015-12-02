@@ -26,7 +26,7 @@
 #include <typeinfo>
 #include <stdexcept>
 #include <memory>
-#include <iostream>
+#include <ostream>
 
 #include <vector>
 #include <map>
@@ -37,7 +37,11 @@ namespace core {
     class Value;
 
     typedef vector<Value> cvector;
-    typedef map<string, Value> cmap;
+    typedef map<string,Value> cmap;
+
+    ostream &operator << ( ostream &os, const Value &v );
+    ostream &operator << ( ostream &os, const cmap &v );
+    ostream &operator << ( ostream &os, const cvector &v );
 
     class Value {
         void null_error( const string &tname ) const;
@@ -47,9 +51,8 @@ namespace core {
         Value( const Value &var );
         Value( Value && other );
 
-        Value( const char *str ); // Special version for old style strings
-
-        template <typename T> Value( T v ) : _data( new RealValue<T>( v )) {
+        explicit Value( const char *str ); // Special version for old style strings
+        template <typename T> explicit Value( T v ) : _data( new RealValue<T>( v )) {
             _data = make_shared<RealValue<T>>( v );
         }
 
@@ -153,9 +156,4 @@ namespace core {
         shared_ptr<Base> _data;
     };
 }
-
-// Make stream simple to use
-inline std::ostream &operator << ( std::ostream &os, const core::Value &v ) {v.out( os ); return os;}
-std::ostream &operator << ( std::ostream &os, const core::cvector &v );
-std::ostream &operator << ( std::ostream &os, const core::cmap &v );
 #endif

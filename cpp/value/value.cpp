@@ -3,6 +3,7 @@
 using namespace std;
 
 namespace core {
+
     Value::Value( const char *str ) : _data( new RealValue<string>( str )) {
     }
 
@@ -51,30 +52,37 @@ namespace core {
         else
             os << "null";
     }
-}
 
-ostream &operator << ( ostream &os, const core::cvector &v )
-{
-    os << "[";
-    for( auto i = v.begin(); i != v.end(); i++ ) {
-        if( i != v.begin())
-            os << ", ";
 
-        os << *i;
+    ostream &operator << ( ostream &os, const Value &v )
+    {
+        v.out( os );
+        return os;
     }
-    os << "]";
-    return os;
-}
 
-ostream &operator << ( ostream &os, const core::cmap &v )
-{
-    os << "{";
-    for( auto i = v.begin(); i != v.end(); i++ ) {
-        if( i != v.begin())
-            os << ", ";
+    ostream &operator << ( ostream &os, const cvector &v )
+    {
+        os << "[";
+        for( auto i = v.begin(); i != v.end(); i++ ) {
+            if( i != v.begin())
+                os << ", ";
 
-        os << "" << i->first << ":" << i->second;
+            os << *i;
+        }
+        os << "]";
+        return os;
     }
-    os << "}";
-    return os;
+
+    ostream &operator << ( ostream &os, const cmap &v )
+    {
+        os << "{";
+        for( auto i = v.begin(); i != v.end(); i++ ) {
+            if( i != v.begin())
+                os << ", ";
+
+            os << "" << i->first << ":" << i->second;
+        }
+        os << "}";
+        return os;
+    }
 }

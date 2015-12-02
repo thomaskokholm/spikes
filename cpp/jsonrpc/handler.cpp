@@ -9,17 +9,14 @@
   All in order to make as beautiful a JsonRPC API as possible, in C++, where
   static typing remains but the runtime will be able to create a system
   call using info given at compile time.
-
-  We use C++14 now !!!
 */
 
 #include <functional>
 #include <iostream>
 #include <tuple>
-#include <map>
 #include <typeinfo>
-#include <typeindex>
-#include "../value/value.hpp"
+#include "handler.hpp"
+#include <functional>
 
 using namespace std;
 using namespace core;
@@ -46,7 +43,7 @@ struct memfun_type
 template<typename Ret, typename Class, typename... Args>
 struct memfun_type<Ret(Class::*)(Args...) const>
 {
-    using type = std::function<Ret(Args...)>;
+    using type = function<Ret(Args...)>;
 };
 
 template<typename F>
@@ -56,62 +53,48 @@ FFL(F const &func)
     return func;
 }
 
-// http://stackoverflow.com/questions/26902633/how-to-iterate-over-a-tuple-in-c-11
-template<class F, class...Ts, std::size_t...Is>
-void for_each_in_tuple(std::tuple<Ts...> & tuple, F func, std::index_sequence<Is...>){
-    using expander = int[];
-    (void)expander { 0, ((void)func(std::get<Is>(tuple)), 0)... };
-}
-
-template<class F, class...Ts>
-void for_each_in_tuple(std::tuple<Ts...> & tuple, F func){
-    for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
-}
-
-map<type_index, string> json_types {
+static map<type_index, string> json_types {
     {typeid( int ), "number"},
     {typeid( float ), "number"},
     {typeid( double ), "number"},
     {typeid( string ), "string"},
     {typeid( bool ), "boolean"},
-    {typeid( void ), "undefined"}
+    {typeid( void ), "undefined"},
+    {typeid( cvector ), "array"},
+    {typeid( cmap ), "object"}
 };
 
+string json_type( const type_info &t )
+{
+    return json_types[ t ];
+}
+
 template<typename Ret, typename... Args>
-class RpcFunction {
+class RpcWrapperFunction : public RpcFunction {
     typedef function<Ret (Args...)> Func;
     Func _fn;
 
     template <int... Is>
-    Ret func(std::tuple<Args...>& tup, helper::index<Is...>) const {
-        return _fn(std::get<Is>(tup)...);
+    Ret func(tuple<Args...>& tup, helper::index<Is...>) const {
+        return _fn(get<Is>(tup)...);
     }
 
-    Ret func(std::tuple<Args...>& tup) const {
+    Ret func(tuple<Args...>& tup) const {
         return func(tup, helper::gen_seq<sizeof...(Args)>{});
     }
 
     // make sure to be able to handle void return transparently
     template<typename R = Ret>
     typename enable_if<!is_void<R>::value, Value>::type
-    call_fn( std::tuple<Args...>& args ) const {
+    call_fn( tuple<Args...>& args ) const {
         return Value( func( args ) );
     }
 
     template<typename R = Ret>
     typename enable_if<is_void<R>::value, Value>::type
-    call_fn( std::tuple<Args...>& args ) const {
+    call_fn( tuple<Args...>& args ) const {
         func( args );
         return Value();
-    }
-
-    template<typename T> void dump(T t) {
-        cout << typeid( t ).name() << endl;
-    }
-
-    template<typename T, typename... LArgs> void dump( T t, LArgs... args ) {
-        cout << typeid( t ).name() << endl;
-        dump( args... );
     }
 
     // from section 28.6.4 page 817
@@ -142,20 +125,41 @@ class RpcFunction {
         }
     };
 
+    template <size_t N>
+    struct tuple_types {
+        template<typename ...T>
+        static typename enable_if<(N<sizeof...(T))>::type
+        append( cvector &params, tuple<T...>& t ) {
+            params.push_back(Value( cmap{
+                {"type", Value( json_types[ typeid( get<N>(t) )] )}
+            }));
+
+            tuple_types<N+1>::append(params, t);
+        }
+
+        template<typename ...T>
+        static typename enable_if<!(N<sizeof...(T))>::type
+        append( cvector &params, tuple<T...>& t ) {
+        }
+    };
+
 public:
-    RpcFunction( const Func fn ) : _fn( fn ) {
+    RpcWrapperFunction( const Func fn ) : _fn( fn ) {
     }
 
-    void footprint() {
-        tuple<Args...> args;
+    Value service_def() const {
+        tuple<Args ...> args;
 
-        for_each_in_tuple(args, [](auto &x) {
-            cout << typeid( x ).name() << " or in JSON " << json_types[ typeid( x )] << endl;
-        });
+        cvector params;
+        tuple_types<0>::append( params, args );
 
-        cout << "Return type " << typeid( Ret ).name() << " JSON " << json_types[ typeid( Ret )] << endl;
+        cmap def {
+            {"parameters", Value( params )},
+            {"return", Value(json_types[ typeid( Ret )])}
+        };
+
+        return Value( def );
     }
-
 
     Value call( const cvector &params ) const {
         tuple<Args...> args;
@@ -168,8 +172,8 @@ public:
 
 // C++ can't infer in template classes !!!
 template<typename Ret, typename... Args>
-    RpcFunction<Ret, Args...> make_RpcFunction( const function<Ret (Args...)> fn ) {
-        return RpcFunction<Ret,Args...>( fn );
+    RpcWrapperFunction<Ret, Args...> make_RpcFunction( const function<Ret (Args...)> fn ) {
+        return RpcWrapperFunction<Ret,Args...>( fn );
     }
 
 struct XXX {
@@ -178,6 +182,8 @@ struct XXX {
 };
 
 int main( ) {
+    clog << Value( cvector{Value( 42 )}) << endl;
+
     auto empty = make_RpcFunction( FFL( []() -> void {
         cout << "empty" << endl;
     }));
@@ -190,16 +196,18 @@ int main( ) {
         return true;
     }));
 
+    cout << f.service_def() << endl;
+
 //    f.footprint();
-    f.call({Value(42), Value{"hest"}, 3.14 });
+    f.call({Value(42), Value{"hest"}, Value( 3.14 )});
 
-    f.call({true, 23, 3.14 });
+    f.call({Value( true ), Value( 23 ), Value( 3.14 )});
 
-    auto f2 = make_RpcFunction( function<void(map<string, string>, string, bool)>( []( map<string, string>, const string s, bool b ) -> void {
+    auto f2 = make_RpcFunction( function<void(cmap, string, bool)>( []( cmap, const string s, bool b ) -> void {
         cout << s << endl;
     }));
 
-    f2.footprint();
+    cout << f2.service_def() << endl;
 
-    f2.call({32});
+    f2.call({Value( 32 )});
 }
