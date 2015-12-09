@@ -1,6 +1,5 @@
 #include <uwsgi.h>
 
-
 int uwsgi_cplusplus_init(void);
 int uwsgi_cplusplus_request(struct wsgi_request *);
 void uwsgi_cplusplus_after_request(struct wsgi_request *);
