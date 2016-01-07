@@ -20,15 +20,21 @@ IF (UWSGI_BIN)
 
     ADD_DEFINITIONS(${UWSGI_CFLAGS})
 
-    ADD_LIBRARY(uwsgi_cpp_test SHARED base.cpp test_handler.cpp)
-
-    SET_TARGET_PROPERTIES(uwsgi_cpp_test
+    ADD_LIBRARY(test_hello SHARED base.cpp test_hello.cpp)
+    SET_TARGET_PROPERTIES(test_hello
         PROPERTIES
         SUFFIX "_plugin.so"
         PREFIX ""
     )
 
-    INSTALL(TARGETS uwsgi_cpp_test DESTINATION lib/uwsgi/plugins)
+    ADD_LIBRARY(test_threads SHARED base.cpp test_threads.cpp)
+    SET_TARGET_PROPERTIES(test_threads
+        PROPERTIES
+        SUFFIX "_plugin.so"
+        PREFIX ""
+    )
+
+    INSTALL(TARGETS test_hello test_threads DESTINATION lib/uwsgi/plugins)
 ELSE (UWSGI_BIN)
     message(FATAL_ERROR "can't find uwsgi core, please install first")
 ENDIF (UWSGI_BIN)

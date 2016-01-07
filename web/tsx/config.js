@@ -34,22 +34,25 @@ System.config({
     "es6-promise": "npm:es6-promise@3.0.2",
     "frankwallis/plugin-typescript": "github:frankwallis/plugin-typescript@2.1.4",
     "plugin-typescript": "npm:plugin-typescript@2.0.3",
-    "react": "npm:react@0.14.0",
+    "react": "npm:react@0.14.3",
     "react-bootstrap": "npm:react-bootstrap@0.27.3",
-    "react-dom": "npm:react-dom@0.14.0",
-    "ts": "github:frankwallis/plugin-typescript@2.1.4",
-    "typescript": "npm:typescript@1.6.2",
+    "react-dom": "npm:react-dom@0.14.3",
+    "ts": "github:frankwallis/plugin-typescript@2.4.2",
+    "typescript": "npm:typescript@1.7.3",
     "github:frankwallis/plugin-typescript@2.1.4": {
-      "typescript": "npm:typescript@1.6.2"
+      "typescript": "npm:typescript@1.7.3"
+    },
+    "github:frankwallis/plugin-typescript@2.4.2": {
+      "typescript": "npm:typescript@1.7.3"
     },
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },
     "github:jspm/nodelibs-buffer@0.1.0": {
-      "buffer": "npm:buffer@3.5.1"
+      "buffer": "npm:buffer@3.5.5"
     },
     "github:jspm/nodelibs-domain@0.1.0": {
-      "domain-browser": "npm:domain-browser@1.1.4"
+      "domain-browser": "npm:domain-browser@1.1.6"
     },
     "github:jspm/nodelibs-events@0.1.1": {
       "events": "npm:events@1.0.2"
@@ -79,15 +82,18 @@ System.config({
     "npm:assert@1.3.0": {
       "util": "npm:util@0.10.3"
     },
-    "npm:babel-runtime@5.8.29": {
+    "npm:babel-runtime@5.8.34": {
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:buffer@3.5.1": {
+    "npm:buffer@3.5.5": {
       "base64-js": "npm:base64-js@0.0.8",
+      "child_process": "github:jspm/nodelibs-child_process@0.1.0",
+      "fs": "github:jspm/nodelibs-fs@0.1.2",
       "ieee754": "npm:ieee754@1.1.6",
-      "is-array": "npm:is-array@1.0.1"
+      "isarray": "npm:isarray@1.0.0",
+      "process": "github:jspm/nodelibs-process@0.1.2"
     },
-    "npm:classnames@2.2.0": {
+    "npm:classnames@2.2.1": {
       "assert": "github:jspm/nodelibs-assert@0.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
@@ -97,16 +103,16 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.2",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
-    "npm:core-js@1.2.3": {
+    "npm:core-js@1.2.6": {
       "fs": "github:jspm/nodelibs-fs@0.1.2",
       "path": "github:jspm/nodelibs-path@0.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
-    "npm:core-util-is@1.0.1": {
+    "npm:core-util-is@1.0.2": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0"
     },
-    "npm:domain-browser@1.1.4": {
+    "npm:domain-browser@1.1.6": {
       "events": "github:jspm/nodelibs-events@0.1.1"
     },
     "npm:envify@3.4.0": {
@@ -122,7 +128,7 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:fbjs@0.3.2": {
-      "core-js": "npm:core-js@1.2.3",
+      "core-js": "npm:core-js@1.2.6",
       "loose-envify": "npm:loose-envify@1.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2",
       "promise": "npm:promise@7.0.4",
@@ -132,7 +138,7 @@ System.config({
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
     },
-    "npm:invariant@2.1.1": {
+    "npm:invariant@2.2.0": {
       "loose-envify": "npm:loose-envify@1.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
@@ -157,7 +163,7 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:plugin-typescript@2.0.3": {
-      "typescript": "npm:typescript@1.6.2"
+      "typescript": "npm:typescript@1.7.3"
     },
     "npm:process@0.11.2": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
@@ -167,27 +173,27 @@ System.config({
       "fs": "github:jspm/nodelibs-fs@0.1.2"
     },
     "npm:react-bootstrap@0.27.3": {
-      "babel-runtime": "npm:babel-runtime@5.8.29",
-      "classnames": "npm:classnames@2.2.0",
+      "babel-runtime": "npm:babel-runtime@5.8.34",
+      "classnames": "npm:classnames@2.2.1",
       "dom-helpers": "npm:dom-helpers@2.4.0",
       "keycode": "npm:keycode@2.1.0",
       "lodash-compat": "npm:lodash-compat@3.10.1",
       "process": "github:jspm/nodelibs-process@0.1.2",
-      "react": "npm:react@0.14.0",
-      "react-dom": "npm:react-dom@0.14.0",
-      "react-overlays": "npm:react-overlays@0.5.0",
+      "react": "npm:react@0.14.3",
+      "react-dom": "npm:react-dom@0.14.3",
+      "react-overlays": "npm:react-overlays@0.5.4",
       "react-prop-types": "npm:react-prop-types@0.3.0",
-      "uncontrollable": "npm:uncontrollable@3.1.3",
+      "uncontrollable": "npm:uncontrollable@3.2.0",
       "warning": "npm:warning@2.1.0"
     },
-    "npm:react-dom@0.14.0": {
-      "react": "npm:react@0.14.0"
+    "npm:react-dom@0.14.3": {
+      "react": "npm:react@0.14.3"
     },
-    "npm:react-overlays@0.5.0": {
-      "classnames": "npm:classnames@2.2.0",
+    "npm:react-overlays@0.5.4": {
+      "classnames": "npm:classnames@2.2.1",
       "dom-helpers": "npm:dom-helpers@2.4.0",
-      "react": "npm:react@0.14.0",
-      "react-dom": "npm:react-dom@0.14.0",
+      "react": "npm:react@0.14.3",
+      "react-dom": "npm:react-dom@0.14.3",
       "react-prop-types": "npm:react-prop-types@0.2.2",
       "warning": "npm:warning@2.1.0"
     },
@@ -197,14 +203,14 @@ System.config({
     "npm:react-prop-types@0.3.0": {
       "warning": "npm:warning@2.1.0"
     },
-    "npm:react@0.14.0": {
+    "npm:react@0.14.3": {
       "envify": "npm:envify@3.4.0",
       "fbjs": "npm:fbjs@0.3.2",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
     "npm:readable-stream@1.1.13": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
-      "core-util-is": "npm:core-util-is@1.0.1",
+      "core-util-is": "npm:core-util-is@1.0.2",
       "events": "github:jspm/nodelibs-events@0.1.1",
       "inherits": "npm:inherits@2.0.1",
       "isarray": "npm:isarray@0.0.1",
@@ -233,10 +239,10 @@ System.config({
     "npm:ua-parser-js@0.7.9": {
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
-    "npm:uncontrollable@3.1.3": {
-      "invariant": "npm:invariant@2.1.1",
+    "npm:uncontrollable@3.2.0": {
+      "invariant": "npm:invariant@2.2.0",
       "process": "github:jspm/nodelibs-process@0.1.2",
-      "react": "npm:react@0.14.0"
+      "react": "npm:react@0.14.3"
     },
     "npm:util@0.10.3": {
       "inherits": "npm:inherits@2.0.1",

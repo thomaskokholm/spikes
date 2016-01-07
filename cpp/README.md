@@ -55,3 +55,9 @@ larger frameworks like boost, Qt or Gtk+.
 
 My goal is again to make it a C++11 compliment as possible, and only depending on the value system
 defined here.
+
+## fuwu (服务) a core server module for uwsgi
+
+base web service for JsonRpc and Restful data Handling
+
+See [Fuwu](fuwu/README.md) 

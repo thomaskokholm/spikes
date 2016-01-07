@@ -2,16 +2,12 @@
 #include <algorithm>    // find
 #include <istream>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
+#include <sstream>
+#include <cctype>
+#include "url.hpp"
 
-class URI {
-    void parse( const std::string &uri );
-
-    std::string _scheme, _host, _port, _path, _query;
-public:
-    URI( const std::string &uri ) {parse( uri );}
-};
-
+using namespace net;
 using namespace std;
 
 static string parse_scheme( istream &is )
@@ -67,7 +63,7 @@ static string parse_port( istream &is )
                 is.unget();
                 break;
             }
-            if( isnum( ch ))
+            if( isdigit( ch ))
                 port += ch;
             else
                 throw invalid_argument( "port must be a number in URI" );
@@ -97,7 +93,7 @@ static string parse_path( istream &is )
     return path;
 }
 
-static list<pair<string,string>> parse_options( istream &is )
+static options_t parse_options( istream &is )
 {
     list<pair<string,string>> lst;
     char ch = is.get();
@@ -124,7 +120,19 @@ static list<pair<string,string>> parse_options( istream &is )
     return lst;
 }
 
-void URI::parse(const string &uri)
+options_t URL::options() const
+{
+    stringstream os( _query );
+
+    return parse_options( os );
+}
+
+URL::URL( const string &uri ) : _port( 80 )
+{
+    parse( uri );
+}
+
+void URL::parse(const string &uri)
 {
     auto uriEnd = uri.end();
 
@@ -159,7 +167,7 @@ void URI::parse(const string &uri)
     if ((hostEnd != uriEnd) && ((&*(hostEnd))[0] == L':')) { // we have a port
         hostEnd++;
         auto portEnd = (pathStart != uriEnd) ? pathStart : queryStart;
-        _port = string(hostEnd, portEnd);
+        _port = stoi(string(hostEnd, portEnd));
     }
 
     // path
