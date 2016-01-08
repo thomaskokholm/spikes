@@ -63,50 +63,10 @@ void uWsgi::log( const string &s )
     uwsgi_log((s + "\n").c_str() );
 }
 
-// Helper function for the app handling
-class AppHandler {
-    reqfn_t _fn;
-public:
-    AppHandler( reqfn_t fn ) : _fn( fn ) {}
-
-    void request(wsgi_request *wsgi_req) {
-        if (uwsgi_parse_vars(wsgi_req)) {
-            uWsgi::log("Invalid request. skip.");
-        } else {
-            Request req( wsgi_req );
-
-            if( _fn )
-                _fn( req );
-        }
-    }
-
-    static void *app_request( wsgi_request *wsgi_req, struct uwsgi_app *app ) {
-        auto hndl = static_cast<AppHandler *>( app->interpreter );
-
-        hndl->request( wsgi_req );
-
-        return NULL; // XXX what does this mean
-    }
-};
-
-static map<string, reqfn_t> apps_queue;
-void uWsgi::register_app( const string &path, reqfn_t fn )
+static map<string, reqfn_t> apps;
+void uWsgi::register_app( const string &name, reqfn_t fn )
 {
-    if( uwsgi.workers == nullptr ) {
-        log( "workers not initealized, prospone adding app" );
-        apps_queue.insert( make_pair( path, fn ));
-        return;
-    }
-
-    // int id = uwsgi.workers[ uwsgi.mywid ].apps_cnt;
-    int id = uwsgi_apps_cnt;
-
-    clog << "App id " << id << " added for path '" << path << "'" << endl;
-
-    uwsgi_app *app = uwsgi_add_app( id, UWSGI_MODULE_NAME.modifier1,
-        (char *)path.data(), path.length(), new AppHandler( fn ), nullptr );
-
-    app->request_subhandler = AppHandler::app_request;
+    apps.insert( make_pair( name, fn ));
 }
 
 // Add a handler function for all incoming requests, mutex ?
@@ -131,32 +91,29 @@ int uwsgi_cplusplus_init(){
 
 static void uwsgi_cplusplus_apps_init() {
     log("Initializing apps c++ plugin");
-
-    /*for( auto app: apps_queue ) {
-        // int id = uwsgi.workers[ uwsgi.mywid ].apps_cnt;
-        int id = uwsgi_apps_cnt;
-
-        clog << "App id " << id << " added for path '" << app.first << "'" << endl;
-
-        uwsgi_app *uapp = uwsgi_add_app( id, UWSGI_MODULE_NAME.modifier1,
-            (char *)app.first.data(), app.first.length(), new AppHandler( app.second ), nullptr );
-
-        uapp->request_subhandler = AppHandler::app_request;
-    }*/
 }
 
+struct Context {
+    string appid;
+    reqfn_t req_handler;
+};
+
 static int uwsgi_cplusplus_mount_app(char *mountpoint, char *app_name) {
-    clog << "mountpoint '"  << mountpoint << "' for app " << app_name << endl;
+    auto app = apps.find( app_name );
 
-    auto app = apps_queue.find( app_name );
+    if( app != apps.end()) {
+        // check for maximum number of apps
+        if (uwsgi_apps_cnt >= uwsgi.max_apps) {
+            uwsgi_log("ERROR: you cannot load more than %d apps in a worker\n", uwsgi.max_apps);
+            return -1;
+        }
 
-    if( app != apps_queue.end()) {
         int id = uwsgi_apps_cnt;
 
-        string appid = app->first;
+        auto c = new Context{app->first, app->second};
 
         uwsgi_app *wi = uwsgi_add_app( id, UWSGI_MODULE_NAME.modifier1,
-            (char *)appid.data(), appid.length(), nullptr, nullptr );
+            mountpoint, strlen( mountpoint ), nullptr, c );
 
         // the loading time is basically 0 in c/c++ so we can hardcode them
         wi->started_at = uwsgi_now();
@@ -164,7 +121,10 @@ static int uwsgi_cplusplus_mount_app(char *mountpoint, char *app_name) {
 
         // ensure app is initialized on all workers (even without a master)
         uwsgi_emulate_cow_for_apps(id);
-        clog << "INFO: app_id " << id << " lazy mapped for appid '" << appid << "'" << endl;
+
+        clog << "INFO: app_id " << id << " lazy mapped at '" << mountpoint
+            << "' for appid '" << app_name << "'" << endl;
+
         return id;
     }
 
@@ -173,7 +133,6 @@ static int uwsgi_cplusplus_mount_app(char *mountpoint, char *app_name) {
 }
 
 static int uwsgi_cplusplus_request(wsgi_request *wsgi_req) {
-
     if (uwsgi_parse_vars(wsgi_req)) {
         log("Invalid request. skip.");
         return -1;
@@ -182,22 +141,29 @@ static int uwsgi_cplusplus_request(wsgi_request *wsgi_req) {
     Request req( wsgi_req );
 
     // Check for app handling
-    wsgi_req->app_id = uwsgi_get_app_id(wsgi_req, wsgi_req->appid, wsgi_req->appid_len,
-        UWSGI_MODULE_NAME.modifier1);
+    if( wsgi_req->appid_len > 0 ) {
+        string appid( wsgi_req->appid, wsgi_req->appid_len );
 
-    string appid( wsgi_req->appid, wsgi_req->appid_len );
-    auto app_iter =apps_queue.find( appid );
+        wsgi_req->app_id = uwsgi_get_app_id(wsgi_req, wsgi_req->appid, wsgi_req->appid_len,
+            UWSGI_MODULE_NAME.modifier1);
 
-    clog << "INFO: appid '" << appid << "'" << endl;
+        clog << "INFO: appid " << appid << " id " << wsgi_req->app_id << endl;
 
-    if( wsgi_req->app_id >= 0 && app_iter != apps_queue.end() ) {
-        clog << "INFO: found app " << appid << " processing request" << endl;
+        if( wsgi_req->app_id >= 0 ) {
+            struct uwsgi_app *wi = &uwsgi_apps[wsgi_req->app_id];
 
-        app_iter->second( req );
-    } else {
-        if( req_handler )
-            req_handler( req );
+            Context *ctx = reinterpret_cast<Context *>( wi->interpreter );
+
+            clog << "INFO: found app " << ctx->appid << " on mount point " << appid << " processing request" << endl;
+
+            ctx->req_handler( req );
+            return UWSGI_OK;
+        }
     }
+
+    if( req_handler )
+        req_handler( req );
+
     return UWSGI_OK;
 }
 
