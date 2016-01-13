@@ -113,14 +113,16 @@ static int uwsgi_cplusplus_mount_app(char *mountpoint, char *app_name) {
         auto c = new Context{app->first, app->second};
 
         uwsgi_app *wi = uwsgi_add_app( id, UWSGI_MODULE_NAME.modifier1,
-            mountpoint, strlen( mountpoint ), nullptr, c );
+            mountpoint, strlen( mountpoint ), c, c );
+
+        // XXX callable need to be set or the app will not be found on request
 
         // the loading time is basically 0 in c/c++ so we can hardcode them
         wi->started_at = uwsgi_now();
         wi->startup_time = 0;
 
         // ensure app is initialized on all workers (even without a master)
-        uwsgi_emulate_cow_for_apps(id);
+        // uwsgi_emulate_cow_for_apps(id);
 
         clog << "INFO: app_id " << id << " lazy mapped at '" << mountpoint
             << "' for appid '" << app_name << "'" << endl;
@@ -140,12 +142,12 @@ static int uwsgi_cplusplus_request(wsgi_request *wsgi_req) {
 
     Request req( wsgi_req );
 
-    // Check for app handling
-    if( wsgi_req->appid_len > 0 ) {
-        string appid( wsgi_req->appid, wsgi_req->appid_len );
+    // clog << "script " << wsgi_req->script << endl;
+    wsgi_req->app_id = uwsgi_get_app_id(wsgi_req, wsgi_req->appid, wsgi_req->appid_len, UWSGI_MODULE_NAME.modifier1);
 
-        wsgi_req->app_id = uwsgi_get_app_id(wsgi_req, wsgi_req->appid, wsgi_req->appid_len,
-            UWSGI_MODULE_NAME.modifier1);
+    // Check for app handling
+    if( wsgi_req->app_id >= 0 ) {
+        string appid( wsgi_req->appid, wsgi_req->appid_len );
 
         clog << "INFO: appid " << appid << " id " << wsgi_req->app_id << endl;
 
@@ -154,9 +156,8 @@ static int uwsgi_cplusplus_request(wsgi_request *wsgi_req) {
 
             Context *ctx = reinterpret_cast<Context *>( wi->interpreter );
 
-            clog << "INFO: found app " << ctx->appid << " on mount point " << appid << " processing request" << endl;
-
             ctx->req_handler( req );
+
             return UWSGI_OK;
         }
     }
