@@ -168,10 +168,10 @@ static int uwsgi_cplusplus_request(wsgi_request *wsgi_req) {
     return UWSGI_OK;
 }
 
-static void uwsgi_cplusplus_after_request(wsgi_request *wsgi_req) {
+/*static void uwsgi_cplusplus_after_request(wsgi_request *wsgi_req) {
     // call log_request(wsgi_req) if you want a standard logline
     uWsgi::log("logging c++ request");
-}
+}*/
 
 class Init {
 public:
@@ -182,7 +182,7 @@ public:
         plugin.init_apps = uwsgi_cplusplus_apps_init;
         plugin.mount_app = uwsgi_cplusplus_mount_app;
         plugin.request = uwsgi_cplusplus_request;
-        plugin.after_request = uwsgi_cplusplus_after_request;
+        // plugin.after_request = uwsgi_cplusplus_after_request;
     }
 };
 
