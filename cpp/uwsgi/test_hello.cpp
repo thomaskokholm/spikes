@@ -15,6 +15,11 @@ public:
     }
 
     void hello_world(Request &req) {
+        if( req.method() == "POST" ) {
+            istream &is = req.read_body();
+            clog << "body = " << is.rdbuf() << endl;
+        }
+
         req.prepare_headers("200 OK");
         req.add_content_type("text/plain");
         req.write_body("Hello, app world");

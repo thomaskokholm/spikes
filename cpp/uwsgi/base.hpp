@@ -12,16 +12,31 @@ namespace uWsgi {
 
     class Request {
         wsgi_request *_wsgi_req;
+        istream *_body_stream;
     public:
         Request( struct wsgi_request *wsgi_req );
+        ~Request();
 
         void add( const string &name, const string &val );
 
         string get( const string &name ) const;
 
+        string method() const;
+        string content_type() const;
+        string uri() const;
+        string remote_addr() const;
+        string query_string() const;
+        string protocol() const;
+        string script_name() const;
+        string host() const;
+        string user_agent() const;
+        string document_root() const;
+        string encoding() const;
+
         void prepare_headers( const string &st = "200 OK" );
         void add_content_type( const string &mime_type );
         void write_body( const string &body );
+        istream &read_body() const;
 
         string cookie_get( const string &name ) const;
     };
@@ -29,7 +44,7 @@ namespace uWsgi {
     typedef function<void(Request &)> reqfn_t;
 
     void register_init( function<void()> fn );
-    void register_app( const string &path, reqfn_t fn );
+    void register_app( const string &name, reqfn_t fn );
     void register_request( reqfn_t fn );
 
     void log( const string &s );
