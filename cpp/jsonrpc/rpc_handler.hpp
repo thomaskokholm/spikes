@@ -27,7 +27,7 @@ namespace Service {
         Rpc &reg( Rpc * );
         bool unreg( const string &name );
 
-        void dispatch(); // A request object of a kind
+        Value call( Session &sess, const string &name, const cvector &params ) const;
     };
 }
 

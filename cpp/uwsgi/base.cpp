@@ -137,6 +137,26 @@ string Request::encoding() const
     return string( _wsgi_req->encoding, _wsgi_req->encoding_len );
 }
 
+string Request::referer() const
+{
+    return string( _wsgi_req->referer, _wsgi_req->referer_len );
+}
+
+string Request::cookie() const
+{
+    return string( _wsgi_req->cookie, _wsgi_req->cookie_len );
+}
+
+string Request::path_info() const
+{
+    return string( _wsgi_req->path_info, _wsgi_req->path_info_len );
+}
+
+string Request::authorization() const
+{
+    return string( _wsgi_req->authorization, _wsgi_req->authorization_len );
+}
+
 void Request::add( const string &name, const string &val )
 {
     uwsgi_response_add_header(_wsgi_req, (char *)name.data(), name.length(),

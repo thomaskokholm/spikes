@@ -18,10 +18,6 @@ Value pi( 3.1415 );
 if( pi.is_type<float>()) 
     float c_pi = pi.get<float>();
 
-if( s.is_type( string )) {
-    string c_s = s.get<string>();
-} 
-
 ```
 
 We also have complex values like cmap and cvector, and these can again be in a Value.

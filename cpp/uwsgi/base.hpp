@@ -21,6 +21,7 @@ namespace uWsgi {
 
         string get( const string &name ) const;
 
+        // Std CGI elements
         string method() const;
         string content_type() const;
         string uri() const;
@@ -32,6 +33,10 @@ namespace uWsgi {
         string user_agent() const;
         string document_root() const;
         string encoding() const;
+        string referer() const;
+        string cookie() const;
+        string path_info() const;
+        string authorization() const;
 
         void prepare_headers( const string &st = "200 OK" );
         void add_content_type( const string &mime_type );
