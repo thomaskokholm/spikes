@@ -14,7 +14,7 @@ public:
         register_app( "test", bind( &HelloTestAppClass::hello_world, this, placeholders::_1 ));
     }
 
-    void hello_world(Request &req) {
+    void hello_world(Request &req) const {
         if( req.method() == "POST" ) {
             istream &is = req.read_body();
             clog << "body = " << is.rdbuf() << endl;
@@ -32,7 +32,7 @@ public:
         register_request( bind( &HelloTestClass::hello_world, this, placeholders::_1 ));
     }
 
-    void hello_world(Request &req) {
+    void hello_world(Request &req) const {
         req.prepare_headers("200 OK");
         req.add_content_type("text/plain");
         req.write_body("Hello, world");

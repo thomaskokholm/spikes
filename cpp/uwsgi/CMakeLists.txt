@@ -7,8 +7,6 @@ IF (POLICY CMP0043)
 ENDIF()
 
 ADD_DEFINITIONS(-std=c++11)
-
-FIND_PROGRAM(UWSGI_BIN NAMES uwsgi)
 IF (UWSGI_BIN)
     EXECUTE_PROCESS(COMMAND ${UWSGI_BIN} --dot-h
                     OUTPUT_FILE uwsgi.h)
@@ -18,7 +16,7 @@ IF (UWSGI_BIN)
                     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    ADD_DEFINITIONS(${UWSGI_CFLAGS})
+    ADD_DEFINITIONS(${UWSGI_CFLAGS} -DUWSGI_MODULE_NAME=test_hello_plugin)
 
     ADD_LIBRARY(test_hello SHARED base.cpp test_hello.cpp)
     SET_TARGET_PROPERTIES(test_hello
@@ -26,6 +24,9 @@ IF (UWSGI_BIN)
         SUFFIX "_plugin.so"
         PREFIX ""
     )
+
+#    REMOVE_DEFINITIONS(-DUWSGI_MODULE_NAME=test_hello_plugin)
+#    ADD_DEFINITIONS(-DUWSGI_MODULE_NAME=test_threads_plugin)
 
     ADD_LIBRARY(test_threads SHARED base.cpp test_threads.cpp)
     SET_TARGET_PROPERTIES(test_threads

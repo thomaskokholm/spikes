@@ -7,12 +7,16 @@ using namespace fuwu;
 using namespace std;
 using namespace uWsgi;
 
-Handler::Handler()
+Handler::Handler( const string &app_name ) : _app_name( app_name )
 {
     _cookie_name = "sessid";
     _cookie_path = "/";
     _cookie_age = 15;
     _cookie_min_age = 5;
+
+    // Make this a uwsgi app to make uwsgi do the routing
+    register_app( _app_name,
+        bind( &Handler::request, this, placeholders::_1 ));
 }
 
 string Handler::random_string_create( int size ) const

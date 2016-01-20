@@ -20,12 +20,13 @@ namespace fuwu {
         header for the response, but the body of the request remain un touched.
     */
     class Handler {
+        string _app_name;
         string _cookie_name;
         string _cookie_path;
         int _cookie_age; // in minuts
         int _cookie_min_age;
     public:
-        Handler();
+        Handler( const string &app_name );
 
     protected:
         string random_string_create( int size = 20 ) const;

@@ -32,11 +32,7 @@ void error_set( cmap &cres, int errnr )
 class JsonrpcHandler : public Handler {
     RpcDispatcher _rpc;
 public:
-    JsonrpcHandler() {
-        // Make this a uwsgi app to make uwsgi do the routing
-        uWsgi::register_app( "jsonrpc",
-            bind( &JsonrpcHandler::request, this, placeholders::_1 ));
-    }
+    JsonrpcHandler() : Handler( "jsonrpc" ) {}
 
     void handle( uWsgi::Request &req, Session &sess ) const {
         // Handle the RPC !!!
@@ -63,6 +59,9 @@ public:
                                 cvector &params = cenv[ "params" ].get<cvector>();
 
                                 res = _rpc.call( sess, method, params );
+
+                                if( notice )
+                                    return Value();
                             } else
                                 error_set( cres, INVALID_PARAMS );
                         } else
@@ -120,4 +119,4 @@ public:
     }
 };
 
-static JsonrpcHandler rpc_handler();
+static JsonrpcHandler rpc_handler;
