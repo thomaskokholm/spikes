@@ -75,10 +75,6 @@ void Handler::request( Request &req ) const
 
     sess_hndl csess = ClientSessionFactory::inst().find( sess_id );
 
-    // if it need refresh, set it on the request
-    if( csess->age() < chrono::minutes( _cookie_min_age ))
-        cookie_set( req, csess );
-
     try {
         Session sess( csess );
 
@@ -86,5 +82,11 @@ void Handler::request( Request &req ) const
     } catch( const exception &ex ) {
         log( "ERROR: while handling request");
         log( ex.what());
+        req.prepare_headers(500);
+        req.set_body(ex.what(), "text/plain");
     }
+
+    // if it need refresh, set it on the request
+    if( csess->age() < chrono::minutes( _cookie_min_age ))
+        cookie_set( req, csess );
 }

@@ -80,6 +80,12 @@ Request::~Request()
 {
     if(_body_stream)
         delete _body_stream;
+
+    if( _out_body.length() > 0 ) {
+        add_content_length(_out_body.length());
+        uwsgi_response_write_body_do(_wsgi_req, (char *)_out_body.data(), _out_body.length());
+    } else
+        uwsgi_response_write_headers_do(_wsgi_req);
 }
 
 string Request::method() const
@@ -157,9 +163,9 @@ string Request::authorization() const
     return string( _wsgi_req->authorization, _wsgi_req->authorization_len );
 }
 
-void Request::add( const string &name, const string &val )
+bool Request::add( const string &name, const string &val )
 {
-    uwsgi_response_add_header(_wsgi_req, (char *)name.data(), name.length(),
+    return -1 != uwsgi_response_add_header(_wsgi_req, (char *)name.data(), name.length(),
         (char *)val.data(), val.length());
 }
 
@@ -172,19 +178,32 @@ string Request::get( const string &name ) const
     return string( str, len );
 }
 
-void Request::prepare_headers( const string &st )
+bool Request::prepare_headers( int status )
 {
-    uwsgi_response_prepare_headers(_wsgi_req, (char *)st.data(), st.length());
+    return -1 != uwsgi_response_prepare_headers_int( _wsgi_req, status );
 }
 
-void Request::add_content_type( const string &mime_type )
+bool Request::prepare_headers( const string &st )
 {
-    uwsgi_response_add_content_type(_wsgi_req, (char *)mime_type.data(), mime_type.length());
+    return -1 != uwsgi_response_prepare_headers(_wsgi_req, (char *)st.data(), st.length());
 }
 
-void Request::write_body( const string &body )
+bool Request::add_content_type( const string &mime_type )
 {
-    uwsgi_response_write_body_do(_wsgi_req, (char *)body.data(), body.length());
+    return -1 != uwsgi_response_add_content_type(_wsgi_req, (char *)mime_type.data(), mime_type.length());
+}
+
+bool Request::add_content_length( uint64_t length )
+{
+    return -1 != uwsgi_response_add_content_length( _wsgi_req, length );
+}
+
+void Request::set_body( const string &body, const string &mime_type )
+{
+    _out_body = body;
+
+    if( !mime_type.empty())
+        add_content_type(mime_type);
 }
 
 istream &Request::read_body() const

@@ -1,5 +1,6 @@
 #include "handler.hpp"
 #include "../value/json.hpp"
+#include <iostream>
 
 using namespace fuwu;
 using namespace core;
@@ -35,6 +36,18 @@ public:
     JsonrpcHandler() : Handler( "jsonrpc" ) {}
 
     void handle( uWsgi::Request &req, Session &sess ) const {
+        if( req.method() != "POST" ) {
+            req.prepare_headers(200);
+            req.set_body("JsonRPC need POST method", "text/plain");
+            return;
+        }
+
+        if( req.content_type() != "application/json" ) {
+            req.prepare_headers(200);
+            req.set_body("JsonRPC need application/json mime type", "text/plain");
+            return;
+        }
+
         // Handle the RPC !!!
         auto hndl = [this](Session &sess, cmap &cenv) -> Value {
             bool notice = true;
@@ -47,7 +60,7 @@ public:
                 notice = false;
             }
 
-            if( cenv[ "jsonrpc" ].get<string>() == "2.0") {
+            if( cenv.count( "jsonrpc" ) > 0 && cenv[ "jsonrpc" ].get<string>() == "2.0") {
                 if( cenv.count( "method" ) > 0 ) {
                     string method = cenv[ "method" ].get<string>();
 
@@ -75,7 +88,8 @@ public:
                 }
             }
 
-            error_set( cres, INVALID_REQUEST );
+            if( cres.count("error") == 0)
+                error_set( cres, INVALID_REQUEST );
 
             return Value( cres );
         };
@@ -85,15 +99,12 @@ public:
         if( env.is_type<cmap>()) { // Handle single
             Value res = hndl( sess, env.get<cmap>() );
 
-            if( res.get<cmap>().count( "id" ) > 0 ) {
-                stringstream os;
+            req.prepare_headers(200);
 
-                json_serialize(os, res);
+            stringstream os;
 
-                req.prepare_headers("200 OK");
-                req.add_content_type("application/json");
-                req.write_body(os.str());
-            }
+            json_serialize(os, res);
+            req.set_body(os.str(), "application/json");
         } else if( env.is_type<cvector>()) { // Handle batch
             cvector &batch = env.get<cvector>();
 
@@ -106,15 +117,27 @@ public:
                     batch_list.push_back( res );
             }
 
+            req.prepare_headers(200);
+
             if( batch_list.size() > 0 ) {
                 stringstream os;
 
                 json_serialize(os, Value( batch_list ));
 
-                req.prepare_headers("200 OK");
-                req.add_content_type("application/json");
-                req.write_body(os.str());
+                req.set_body(os.str(), "application/json");
             }
+        } else {
+            cmap cerror {
+                {"error", Value( INVALID_REQUEST )},
+                {"message", Value( "bad JsonRPC envelope" )}
+            };
+
+            stringstream os;
+
+            json_serialize(os, Value( cerror ));
+
+            req.prepare_headers(200);
+            req.set_body(os.str(), "application/json");
         }
     }
 };

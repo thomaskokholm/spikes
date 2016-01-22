@@ -13,11 +13,12 @@ namespace uWsgi {
     class Request {
         wsgi_request *_wsgi_req;
         istream *_body_stream;
+        string _out_body;
     public:
         Request( struct wsgi_request *wsgi_req );
         ~Request();
 
-        void add( const string &name, const string &val );
+        bool add( const string &name, const string &val );
 
         string get( const string &name ) const;
 
@@ -38,9 +39,12 @@ namespace uWsgi {
         string path_info() const;
         string authorization() const;
 
-        void prepare_headers( const string &st = "200 OK" );
-        void add_content_type( const string &mime_type );
-        void write_body( const string &body );
+        bool prepare_headers( int status = 200 );
+        bool prepare_headers( const string &st = "200 OK" );
+        bool add_content_type( const string &mime_type );
+        bool add_content_length( uint64_t length ); // write body does this by it self
+        void set_body( const string &body, const string &mime_type = "" );
+
         istream &read_body() const;
 
         string cookie_get( const string &name ) const;
