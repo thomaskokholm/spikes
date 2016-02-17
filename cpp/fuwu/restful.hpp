@@ -9,7 +9,7 @@ namespace fuwu {
     public:
         string name;
         string desc;    // Prosa description of argument
-        type_info type; // Rtti type info
+        const type_info &type; // Rtti type info
         bool optional;  // if true this value may be ommited
     };
 
@@ -20,7 +20,7 @@ namespace fuwu {
     public:
         string name;
         string desc;    // Prosa description of column
-        type_info type; // Rtti type info
+        const type_info &type; // Rtti type info
         bool readonly;  // does the entity accept this value as an update value
         bool order;     // May we order on this column
         string hint;    // Any kind of render hint
@@ -38,12 +38,11 @@ namespace fuwu {
         typedef vector<EntityArgument> arguments_t;
 
     protected:
-        string _name, _desc;
+        string _desc;
         columns_t _columns;
         arguments_t _arguments;
 
     public:
-        string name_get() const {return _name;}
         string desc_get() const {return _desc;}
         columns_t columns_get() const {return _columns;}
         arguments_t arguments_get() const {return _arguments;}
@@ -53,5 +52,18 @@ namespace fuwu {
         virtual cmap do_create( Session &sess, const cmap &args ) const = 0;
         virtual bool do_update( Session &sess, const Value &key, const cmap &data ) const = 0;
         virtual bool do_delete( Session &sess, const Value &key ) const = 0;
+    };
+
+    typedef shared_ptr<Entity> entity_ptr;
+    class EntityDispatcher {
+        map<string, entity_ptr> _entities;
+        EntityDispatcher() {}
+    public:
+        static EntityDispatcher &inst();
+
+        void reg( const string &name, entity_ptr ent );
+        void unreg( const string &name );
+        bool has_a( const string &name ) const;
+        entity_ptr find( const string &name ) const;
     };
 }
