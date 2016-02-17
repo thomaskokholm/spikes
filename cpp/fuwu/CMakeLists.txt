@@ -10,8 +10,10 @@ IF (UWSGI_BIN)
         ../uwsgi/base.cpp
         ../value/value.cpp
         ../value/json.cpp
+        ../net/url.cpp
         handler.cpp
         jsonrpc.cpp
+        restful.cpp
         service.cpp
     )
 

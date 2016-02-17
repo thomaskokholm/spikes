@@ -37,9 +37,8 @@ void ThreadsTestClass::hello_world(Request &req) {
     thread_count();
     ++_reqs;
 
-    req.prepare_headers("200 OK");
-    req.add_content_type("text/html");
-    req.write_body("Hello, world");
+    req.prepare_headers(200);
+    req.set_body("Hello, world", "text/html");
 
     clog << "requests " << _reqs << endl;
 }

@@ -288,29 +288,3 @@ EventDispatcher &EventDispatcher::init()
 
     return *inst;
 }
-
-void RpcDispatcher::reg( const Rpc *method )
-{
-    _methods[ method->name_get() ] = method;
-}
-
-void RpcDispatcher::unreg( const string &name )
-{
-    _methods.erase( name );
-}
-
-bool RpcDispatcher::has_a( const string &name ) const
-{
-    return _methods.count( name ) > 0;
-}
-
-Value RpcDispatcher::call( Session &sess, const string &name, const cvector &params ) const
-{
-    auto i = _methods.find( name );
-
-    if( i != _methods.end()) {
-        return i->second->call( sess, params );
-    }
-
-    return Value();
-}

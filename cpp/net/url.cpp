@@ -10,6 +10,7 @@
 using namespace net;
 using namespace std;
 
+/*
 static string parse_scheme( istream &is )
 {
     string scheme;
@@ -92,7 +93,7 @@ static string parse_path( istream &is )
 
     return path;
 }
-
+*/
 static options_t parse_options( istream &is )
 {
     list<pair<string,string>> lst;

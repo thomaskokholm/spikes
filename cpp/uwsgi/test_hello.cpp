@@ -20,9 +20,8 @@ public:
             clog << "body = " << is.rdbuf() << endl;
         }
 
-        req.prepare_headers("200 OK");
-        req.add_content_type("text/plain");
-        req.write_body("Hello, app world");
+        req.prepare_headers(200);
+        req.set_body("Hello, app world", "text/plain");
     }
 };
 
@@ -33,9 +32,8 @@ public:
     }
 
     void hello_world(Request &req) const {
-        req.prepare_headers("200 OK");
-        req.add_content_type("text/plain");
-        req.write_body("Hello, world");
+        req.prepare_headers(200);
+        req.set_body("Hello, world", "text/plain");
     }
 };
 

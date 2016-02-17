@@ -1,6 +1,7 @@
+#include "jsonrpc.hpp"
 #include "handler.hpp"
-#include "../value/json.hpp"
 #include <iostream>
+#include "../value/json.hpp"
 
 using namespace fuwu;
 using namespace core;
@@ -143,3 +144,29 @@ public:
 };
 
 static JsonrpcHandler rpc_handler;
+
+void RpcDispatcher::reg( const string &name, const Rpc *method )
+{
+    _methods[ name ] = method;
+}
+
+void RpcDispatcher::unreg( const string &name )
+{
+    _methods.erase( name );
+}
+
+bool RpcDispatcher::has_a( const string &name ) const
+{
+    return _methods.count( name ) > 0;
+}
+
+Value RpcDispatcher::call( Session &sess, const string &name, const cvector &params ) const
+{
+    auto i = _methods.find( name );
+
+    if( i != _methods.end()) {
+        return i->second->call( sess, params );
+    }
+
+    return Value();
+}

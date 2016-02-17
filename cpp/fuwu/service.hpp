@@ -126,31 +126,6 @@ namespace fuwu {
 
         void rollback(); // Session will commit data is this is not called (error handling)
     };
-
-    class Rpc {
-    protected:
-        string _name;
-
-    public:
-        string name_get() const {return _name;}
-
-        virtual cmap service_def() const = 0;
-
-        virtual Value call( Session &sess, const cvector &params ) const = 0;
-    };
-
-    class RpcDispatcher {
-    private:
-        map<string, const Rpc *> _methods;
-
-    public:
-        void reg( const Rpc * );
-        void unreg( const string &name );
-
-        bool has_a( const string &name ) const;
-
-        Value call( Session &sess, const string &name, const cvector &params ) const;
-    };
 }
 
 #endif
