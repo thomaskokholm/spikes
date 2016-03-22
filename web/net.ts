@@ -352,7 +352,7 @@ class RestEntity<Data> implements Entity<number, Data> {
     
     public create( data: Data ) : Promise<Data> {
         return new Promise<Data>((resolve, reject) => {
-            fetch( this.url_get( key ), {
+            fetch( this.url_get(), {
                 method: 'POST',
                 mode: 'same-origin',
                 cache: 'no-store',
